@@ -4,8 +4,10 @@ import (
 	"fmt"
 )
 
+// An Error is a stack errors.
 type Error []error
 
+// Error returns a string containing the indented error stack.
 func (e Error) Error() string {
 	n := len(e) - 1
 	s := "Error stack:"
@@ -19,13 +21,14 @@ func (e Error) Error() string {
 	return s
 }
 
-func Stack(e error, s string) error {
-	if e, ok := e.(Error); ok {
-		return append(e, fmt.Errorf(s))
+// Stack stacks an error on top of previous errors.
+// If the original error is nil, it returns nil.
+func Stack(e error, s string, a ...interface{}) error {
+	if e == nil {
+		return nil
 	}
-	return Error{e, fmt.Errorf(s)}
-}
-
-func Stackf(e error, s string, a ...interface{}) error {
-	return Stack(e, fmt.Sprintf(s, a...))
+	if e, ok := e.(Error); ok {
+		return append(e, fmt.Errorf(s, a...))
+	}
+	return Error{e, fmt.Errorf(s, a...)}
 }
